@@ -1,0 +1,119 @@
+# Canonical class definitions and normalizations for Construction-Site Vehicle Classification
+
+classes:
+  - id: 0
+    canonical: "bulldozer"
+    display_name: "Bulldozer"
+    code: "BDZ"
+    color: "#E67E22"
+    aliases:
+      - "bulldozer"
+      - "dozer"
+      - "bull-dozer"
+      - "bull_dozer"
+      - "crawler dozer"
+      - "caterpillar"
+    description: "Track-type tractor equipped with a substantial metal plate used to push large quantities of soil, sand, or rubble."
+
+  - id: 1
+    canonical: "dump_truck"
+    display_name: "Dump Truck"
+    code: "DTK"
+    color: "#F39C12"
+    aliases:
+      - "dump truck"
+      - "dump_truck"
+      - "dump-truck"
+      - "dumper"
+      - "tipper truck"
+      - "haul truck"
+      - "tipper"
+    description: "Heavy-duty truck used for transporting loose materials such as sand, gravel, or demolition waste for construction."
+
+  - id: 2
+    canonical: "excavator"
+    display_name: "Excavator"
+    code: "EXC"
+    color: "#E74C3C"
+    aliases:
+      - "excavator"
+      - "digger"
+      - "hydraulic excavator"
+      - "trackhoe"
+      - "backhoe"
+      - "caterpillar excavator"
+    description: "Heavy construction equipment consisting of a boom, dipper, bucket, and cab on a rotating platform atop an undercarriage."
+
+  - id: 3
+    canonical: "grader"
+    display_name: "Grader"
+    code: "GRD"
+    color: "#3498DB"
+    aliases:
+      - "grader"
+      - "motor grader"
+      - "motor_grader"
+      - "road grader"
+      - "road_grader"
+    description: "Construction machine with a long blade used to create a flat surface during the grading process."
+
+  - id: 4
+    canonical: "loader"
+    display_name: "Loader"
+    code: "LDR"
+    color: "#2ECC71"
+    aliases:
+      - "loader"
+      - "wheel loader"
+      - "wheel_loader"
+      - "front loader"
+      - "front_loader"
+      - "payloader"
+      - "bucket loader"
+    description: "Heavy equipment machine used to move aside or load materials such as asphalt, demolition debris, dirt, and gravel."
+
+  - id: 5
+    canonical: "mixer_truck"
+    display_name: "Mixer Truck"
+    code: "MIX"
+    color: "#9B59B6"
+    aliases:
+      - "mixer truck"
+      - "mixer_truck"
+      - "mixer-truck"
+      - "concrete mixer"
+      - "concrete_mixer"
+      - "cement mixer"
+      - "cement_mixer"
+      - "transit mixer"
+    description: "Specialized truck equipped to combine cement, aggregate, and water to form concrete, continuously rotating during transit."
+
+  - id: 6
+    canonical: "mobile_crane"
+    display_name: "Mobile Crane"
+    code: "CRN"
+    color: "#1ABC9C"
+    aliases:
+      - "mobile crane"
+      - "mobile_crane"
+      - "mobile-crane"
+      - "crane"
+      - "truck crane"
+      - "rough terrain crane"
+      - "all terrain crane"
+    description: "Cable-controlled crane mounted on crawlers or rubber-tired carriers designed for easily transporting to work sites."
+
+  - id: 7
+    canonical: "roller"
+    display_name: "Roller"
+    code: "ROL"
+    color: "#34495E"
+    aliases:
+      - "roller"
+      - "road roller"
+      - "road_roller"
+      - "steam roller"
+      - "compactor"
+      - "soil compactor"
+      - "vibratory roller"
+    description: "Compactor-type engineering vehicle used to compact soil, gravel, concrete, or asphalt in the construction of roads and foundations."

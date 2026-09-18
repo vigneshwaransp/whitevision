@@ -1,0 +1,106 @@
+# Construction-Site Vehicle Classification System Configuration
+
+project:
+  name: "Construction-Site Vehicle Classifier"
+  description: "Computer Vision classification system for 8 construction vehicle types using EfficientNetB0"
+  version: "1.0.0"
+
+dataset:
+  name: "ConstructionXC7C"
+  hf_repo: "neogpx/constructionxc7c"
+  raw_dir: "data/raw"
+  annotations_dir: "data/annotations"
+  crops_dir: "data/crops"
+  processed_dir: "data/processed"
+  train_dir: "data/train"
+  val_dir: "data/validation"
+  test_dir: "data/test"
+  metadata_path: "data/metadata.csv"
+  supported_extensions:
+    - ".jpg"
+    - ".jpeg"
+    - ".png"
+  min_crop_size: 16
+  padding_ratio: 0.05
+  split_ratios:
+    train: 0.70
+    val: 0.15
+    test: 0.15
+  seed: 42
+
+model:
+  name: "EfficientNetB0"
+  weights: "imagenet"
+  include_top: false
+  image_size: 224
+  channels: 3
+  dropout: 0.3
+  num_classes: 8
+
+training:
+  batch_size: 32
+  epochs: 15
+  learning_rate: 0.001
+  optimizer: "adam"
+  loss: "categorical_crossentropy"
+  seed: 42
+  use_class_weights: true
+  callbacks:
+    early_stopping:
+      monitor: "val_loss"
+      patience: 5
+      restore_best_weights: true
+    reduce_lr:
+      monitor: "val_loss"
+      factor: 0.2
+      patience: 2
+      min_lr: 1e-7
+
+fine_tuning:
+  epochs: 12
+  learning_rate: 0.00001
+  unfreeze_top_layers: 30
+  freeze_batch_norm: true
+  callbacks:
+    early_stopping:
+      monitor: "val_loss"
+      patience: 4
+      restore_best_weights: true
+    reduce_lr:
+      monitor: "val_loss"
+      factor: 0.2
+      patience: 2
+      min_lr: 1e-8
+
+augmentation:
+  horizontal_flip: true
+  rotation_factor: 0.05
+  zoom_height_factor: 0.10
+  zoom_width_factor: 0.10
+  translation_height_factor: 0.08
+  translation_width_factor: 0.08
+  contrast_factor: 0.10
+
+inference:
+  confidence_threshold: 0.50
+  top_k: 3
+
+export:
+  keras_model_path: "models/construction_vehicle_efficientnetb0.keras"
+  classes_json_path: "models/classes.json"
+  tflite_model_path: "models/construction_vehicle_efficientnetb0.tflite"
+
+reports:
+  dir: "reports"
+  dataset_report_json: "reports/dataset_report.json"
+  dataset_report_csv: "reports/dataset_report.csv"
+  data_quality_report_csv: "reports/data_quality_report.csv"
+  classification_report_txt: "reports/classification_report.txt"
+  classification_report_json: "reports/classification_report.json"
+  confusion_matrix_png: "reports/confusion_matrix.png"
+  confusion_matrix_normalized_png: "reports/confusion_matrix_normalized.png"
+  training_accuracy_png: "reports/training_accuracy.png"
+  training_loss_png: "reports/training_loss.png"
+  top_confident_errors_csv: "reports/top_confident_errors.csv"
+  misclassified_dir: "reports/misclassified"
+  model_card_md: "reports/model_card.md"

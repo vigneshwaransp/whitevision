@@ -1,0 +1,27 @@
+version: "3.8"
+
+services:
+  streamlit-ui:
+    build: .
+    container_name: whitevision-ui
+    restart: unless-stopped
+    ports:
+      - "8501:8501"
+    environment:
+      - PORT=8501
+    volumes:
+      - ./data:/app/data:ro
+      - ./models:/app/models:ro
+    command: streamlit run app/streamlit_app.py --server.port=8501 --server.address=0.0.0.0
+
+  fastapi-service:
+    build: .
+    container_name: whitevision-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+    volumes:
+      - ./models:/app/models:ro
+    command: uvicorn app.api:app --host 0.0.0.0 --port 8000

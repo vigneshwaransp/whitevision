@@ -1,0 +1,41 @@
+{
+  "dataset_name": "ConstructionXC7C",
+  "raw_directory": "D:\\whitevision\\data\\raw",
+  "annotation_format_detected": "coco",
+  "total_images_found": 2284,
+  "valid_images": 2284,
+  "corrupted_images_count": 0,
+  "corrupted_images": [],
+  "total_annotations_found": 2932,
+  "target_canonical_classes": [
+    "bulldozer",
+    "dump_truck",
+    "excavator",
+    "grader",
+    "loader",
+    "mixer_truck",
+    "mobile_crane",
+    "roller"
+  ],
+  "total_target_classes": 8,
+  "annotations_per_class": {
+    "roller": 331,
+    "bulldozer": 393,
+    "excavator": 549,
+    "mobile_crane": 257,
+    "dump_truck": 667,
+    "grader": 354,
+    "mixer_truck": 183,
+    "loader": 198
+  },
+  "unmapped_categories": {},
+  "missing_source_images_count": 0,
+  "zero_or_negative_boxes_count": 0,
+  "very_small_boxes_count": 19,
+  "class_imbalance": {
+    "max_class_samples": 667,
+    "min_class_samples": 183,
+    "imbalance_ratio_max_to_min": 3.64,
+    "is_significantly_imbalanced": true
+  }
+}

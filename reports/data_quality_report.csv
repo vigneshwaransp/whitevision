@@ -1,0 +1,7 @@
+source_image,annotation_id,raw_class,rejection_reason,bbox
+data\raw\test\Heavy_Equipment_1680_jpg.rf.5ae6432c3db860244a29e3da5ff2044a.jpg,384,dump truck,Crop too small: 14x16 < min 16,"[331.0, 100.0, 12.5, 14.0]"
+data\raw\test\Heavy_Equipment_392_jpg.rf.6b0dfd5d751cc14e2b1322a3aa247400.jpg,419,dump truck,Crop too small: 15x90 < min 16,"[626.0, 43.0, 14.0, 81.5]"
+data\raw\test\Heavy_Equipment_2264_jpg.rf.bb76ad5c1ac664fe7860c96d170005d9.jpg,719,dump truck,Crop too small: 13x41 < min 16,"[156.0, 136.0, 11.0, 37.0]"
+data\raw\test\Heavy_Equipment_2129_jpg.rf.d1449998af89c348afa00988915458cd.jpg,811,dump truck,Crop too small: 12x31 < min 16,"[271.0, 246.0, 10.0, 28.5]"
+data\raw\valid\Heavy_Equipment_1202_jpg.rf.f417f7c17dbd6b1e94c2c2387ce7e2dc.jpg,1842,dump truck,Crop too small: 27x13 < min 16,"[522.0, 330.0, 24.5, 11.0]"
+data\raw\valid\Heavy_Equipment_1694_jpg.rf.fb5708a990752e8350b201d6459018b0.jpg,1903,dump truck,Crop too small: 14x27 < min 16,"[208.0, 129.0, 12.5, 24.5]"

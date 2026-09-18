@@ -1,0 +1,54 @@
+{
+  "classes": [
+    "bulldozer",
+    "dump_truck",
+    "excavator",
+    "grader",
+    "loader",
+    "mixer_truck",
+    "mobile_crane",
+    "roller"
+  ],
+  "metadata": {
+    "bulldozer": {
+      "display_name": "Bulldozer",
+      "color": "#E67E22",
+      "emoji": "\ud83d\ude9c"
+    },
+    "dump_truck": {
+      "display_name": "Dump Truck",
+      "color": "#F39C12",
+      "emoji": "\ud83d\ude9a"
+    },
+    "excavator": {
+      "display_name": "Excavator",
+      "color": "#E74C3C",
+      "emoji": "\ud83c\udfd7\ufe0f"
+    },
+    "grader": {
+      "display_name": "Grader",
+      "color": "#3498DB",
+      "emoji": "\ud83d\udee3\ufe0f"
+    },
+    "loader": {
+      "display_name": "Loader",
+      "color": "#2ECC71",
+      "emoji": "\ud83d\ude9c"
+    },
+    "mixer_truck": {
+      "display_name": "Mixer Truck",
+      "color": "#9B59B6",
+      "emoji": "\ud83d\ude9b"
+    },
+    "mobile_crane": {
+      "display_name": "Mobile Crane",
+      "color": "#1ABC9C",
+      "emoji": "\ud83c\udfd7\ufe0f"
+    },
+    "roller": {
+      "display_name": "Roller",
+      "color": "#34495E",
+      "emoji": "\ud83d\udee4\ufe0f"
+    }
+  }
+}
