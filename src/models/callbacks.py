@@ -40,7 +40,7 @@ def build_callbacks(
             val_loss = logs.get("val_loss", 0.0)
             if val_loss < self.best_val_score:
                 self.best_val_score = val_loss
-                star = " ★ (Best)"
+                star = " [BEST]"
             else:
                 star = ""
 

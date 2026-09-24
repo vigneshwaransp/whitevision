@@ -108,3 +108,65 @@ uvicorn app.api:app --host 0.0.0.0 --port 8000
 # Launch Streamlit operations console (port 8501)
 streamlit run app/streamlit_app.py --server.port 8501 --server.headless true
 ```
+
+Both services are active locally:
+- Streamlit Web Dashboard: `http://localhost:8501`
+- FastAPI REST Service: `http://localhost:8000`
+- Interactive API Docs: `http://localhost:8000/docs`
+
+---
+
+### Option F: Render Cloud Deployment (1-Click Blueprint for Frontend + Backend)
+
+Deploy both the **FastAPI Inference Microservice** and the **Streamlit Operations Console** simultaneously using the preconfigured `render.yaml` Blueprint.
+
+#### Step 1: Push Your Code to GitHub
+Ensure all latest files (`render.yaml`, `.python-version`, `app/api.py`, `app/streamlit_app.py`, `requirements.txt`) are committed and pushed:
+```bash
+git add .
+git commit -m "feat: render blueprint and microservice gateway integration"
+git push origin main
+```
+
+#### Step 2: Create Blueprint on Render
+1. Navigate to the [Render Dashboard](https://dashboard.render.com).
+2. Click the **New +** button in the top navigation bar.
+3. Select **Blueprint** from the dropdown menu.
+4. Connect your GitHub repository (`https://github.com/vigneshwaransp/whitevision.git`).
+5. Render detects the root `render.yaml` file and automatically provisions two interconnected services:
+   - **`whitevision-api`**: FastAPI REST microservice running EfficientNet-B0 and OOD Gatekeeper.
+   - **`whitevision-ui`**: Streamlit Operations Console connected to `whitevision-api` via internal private networking (`BACKEND_HOSTPORT`).
+6. Click **Apply**.
+
+#### Step 3: Access Your Live Deployments
+Render will build both services concurrently. Once deployment completes, your services will be live at:
+- Frontend Dashboard: `https://whitevision-ui.onrender.com`
+- Backend API Gateway: `https://whitevision-api.onrender.com`
+- Interactive Swagger Documentation: `https://whitevision-api.onrender.com/docs`
+- Health Check: `https://whitevision-api.onrender.com/health`
+
+#### Manual Service Creation (Alternative)
+If you prefer creating services individually rather than via Blueprint:
+
+1. **Backend Web Service (`whitevision-api`)**:
+   - Environment: `Python 3`
+   - Build Command: `pip install --upgrade pip && pip install -r requirements.txt`
+   - Start Command: `uvicorn app.api:app --host 0.0.0.0 --port $PORT`
+   - Health Check Path: `/health`
+   - Environment Variables:
+     - `PYTHON_VERSION`: `3.12.0`
+     - `TF_CPP_MIN_LOG_LEVEL`: `3`
+     - `TF_ENABLE_ONEDNN_OPTS`: `0`
+     - `PYTHONUNBUFFERED`: `1`
+
+2. **Frontend Web Service (`whitevision-ui`)**:
+   - Environment: `Python 3`
+   - Build Command: `pip install --upgrade pip && pip install -r requirements.txt`
+   - Start Command: `streamlit run app/streamlit_app.py --server.port $PORT --server.address 0.0.0.0 --server.headless true`
+   - Health Check Path: `/_stcore/health`
+   - Environment Variables:
+     - `PYTHON_VERSION`: `3.12.0`
+     - `TF_CPP_MIN_LOG_LEVEL`: `3`
+     - `TF_ENABLE_ONEDNN_OPTS`: `0`
+     - `PYTHONUNBUFFERED`: `1`
+     - `BACKEND_API_URL`: `https://whitevision-api.onrender.com` (or your backend service URL)

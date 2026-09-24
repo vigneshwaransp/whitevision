@@ -3,11 +3,15 @@
 Engineered for precision inference, zero-emoji telemetry, and partial-image robustness.
 """
 
+import io
 import json
+import os
 import sys
 from pathlib import Path
+from typing import Any, Dict, Optional
 from PIL import Image
 import pandas as pd
+import requests
 import streamlit as st
 
 # Add project root to sys.path
@@ -226,6 +230,67 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
+def get_backend_api_url() -> Optional[str]:
+    """Retrieve configured backend API URL from environment."""
+    url = os.environ.get("BACKEND_API_URL")
+    if not url:
+        hostport = os.environ.get("BACKEND_HOSTPORT")
+        if hostport:
+            url = f"http://{hostport}"
+    if url and not (url.startswith("http://") or url.startswith("https://")):
+        url = f"http://{url}"
+    return url.rstrip("/") if url else None
+
+
+def check_backend_api_health(api_url: str) -> bool:
+    """Verify if the backend REST API is responsive."""
+    try:
+        resp = requests.get(f"{api_url}/health", timeout=3)
+        return resp.status_code == 200 and resp.json().get("status") == "healthy"
+    except Exception:
+        return False
+
+
+def predict_via_api(
+    api_url: str,
+    img: Image.Image,
+    top_k: int = 3,
+    threshold: float = 0.50,
+    use_tta: bool = True,
+) -> dict:
+    """Execute inference by proxying to the WhiteVision FastAPI microservice."""
+    buf = io.BytesIO()
+    img.save(buf, format="JPEG", quality=95)
+    buf.seek(0)
+
+    url = f"{api_url.rstrip('/')}/predict"
+    params = {"top_k": top_k, "threshold": threshold, "use_tta": use_tta}
+    files = {"image": ("input_crop.jpg", buf, "image/jpeg")}
+
+    resp = requests.post(url, params=params, files=files, timeout=35)
+    if resp.status_code == 200:
+        return resp.json()
+    elif resp.status_code == 422:
+        detail_msg = resp.json().get("detail", "Unsupported image: No construction vehicle detected.")
+        return {
+            "is_supported": False,
+            "error": detail_msg,
+            "detected_object": "Non-Construction Entity",
+            "prediction": "unsupported",
+            "code": "ERR",
+            "display_name": "Unsupported Image",
+            "confidence": 0.0,
+            "percentage": "0.00%",
+            "status": "Rejected: Not a Construction Vehicle",
+            "threshold": threshold,
+            "is_confident": False,
+            "top_predictions": [],
+            "all_probabilities": {},
+        }
+    else:
+        raise RuntimeError(f"Backend API HTTP {resp.status_code}: {resp.text}")
+
+
 @st.cache_resource
 def load_predictor():
     """Cache and load inference model predictor with TTA support."""
@@ -358,6 +423,30 @@ def main():
         )
 
         st.markdown("---")
+        st.markdown("#### INFERENCE ROUTING")
+        env_backend = get_backend_api_url()
+        default_mode_idx = 1 if env_backend else 0
+        inference_mode = st.radio(
+            "Execution Gateway:",
+            options=["Direct In-Memory Engine", "Distributed REST Microservice"],
+            index=default_mode_idx,
+            help="Choose between executing neural inference locally in-process or routing requests to the FastAPI microservice."
+        )
+
+        active_api_url = None
+        if inference_mode == "Distributed REST Microservice":
+            active_api_url = st.text_input(
+                "API Gateway Endpoint:",
+                value=env_backend or "http://localhost:8000",
+                help="URL of the WhiteVision FastAPI backend (e.g., https://whitevision-api.onrender.com or http://localhost:8000)"
+            )
+            is_healthy = check_backend_api_health(active_api_url) if active_api_url else False
+            if is_healthy:
+                st.markdown("<span class='chip chip-online'>API: CONNECTED & ONLINE</span>", unsafe_allow_html=True)
+            else:
+                st.markdown("<span class='chip' style='background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4);'>API: CONNECTING / UNREACHABLE (FALLBACK READY)</span>", unsafe_allow_html=True)
+
+        st.markdown("---")
         st.markdown("#### TEST SAMPLES EXPLORER")
         samples = get_sample_test_images()
         selected_sample = None
@@ -456,18 +545,38 @@ def main():
         with col_telemetry:
             st.markdown("#### 2. NEURAL CLASSIFICATION TELEMETRY")
             if active_image is not None:
-                predictor = load_predictor()
-                if predictor is None:
-                    st.error("Predictor engine is not available. Please verify model files.")
-                else:
-                    with st.spinner("Executing neural inference with EfficientNetB0..."):
-                        results = predictor.predict(
-                            active_image,
-                            top_k=top_k,
-                            threshold=confidence_threshold,
-                            use_tta=enable_tta,
-                        )
+                results = None
+                used_backend = False
 
+                if inference_mode == "Distributed REST Microservice" and active_api_url:
+                    with st.spinner("Dispatching query to FastAPI microservice..."):
+                        try:
+                            results = predict_via_api(
+                                active_api_url,
+                                active_image,
+                                top_k=top_k,
+                                threshold=confidence_threshold,
+                                use_tta=enable_tta,
+                            )
+                            used_backend = True
+                        except Exception as api_err:
+                            st.warning(f"Microservice gateway unavailable ({api_err}). Reverting automatically to local neural engine.")
+                            results = None
+
+                if results is None:
+                    predictor = load_predictor()
+                    if predictor is None:
+                        st.error("Predictor engine is not available. Please verify model files.")
+                    else:
+                        with st.spinner("Executing neural inference with EfficientNetB0..."):
+                            results = predictor.predict(
+                                active_image,
+                                top_k=top_k,
+                                threshold=confidence_threshold,
+                                use_tta=enable_tta,
+                            )
+
+                if results is not None:
                     is_supported = results.get("is_supported", True)
 
                     if not is_supported:
@@ -508,12 +617,12 @@ def main():
                         </div>
                         """, unsafe_allow_html=True)
                     else:
-                        is_confident = results["is_confident"]
+                        is_confident = results.get("is_confident", True)
                         top_item = results["top_predictions"][0]
-                        pred_code = top_item["code"]
-                        pred_dname = top_item["display_name"]
-                        conf_val = top_item["confidence"]
-                        conf_pct = top_item["percentage"]
+                        pred_code = top_item.get("code") or normalizer.get_code(top_item.get("class", ""))
+                        pred_dname = top_item.get("display_name") or normalizer.get_display_name(top_item.get("class", ""))
+                        conf_val = top_item.get("confidence", 0.0)
+                        conf_pct = top_item.get("percentage") or f"{conf_val * 100:.2f}%"
 
                         # Primary Detection Panel
                         if is_confident:
@@ -545,6 +654,7 @@ def main():
                                 </div>
                                 <div style="text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: #94a3b8;">
                                     THRESHOLD: {confidence_threshold * 100:.0f}%<br>
+                                    ROUTING: {'REST MICROSERVICE' if used_backend else 'LOCAL ENGINE'}<br>
                                     TTA ENGINE: {'MULTI-SCALE ACTIVE' if enable_tta else 'SINGLE-PASS'}
                                 </div>
                             </div>
@@ -566,12 +676,12 @@ def main():
                         # Candidate Breakdown
                         ranking_title = "CANDIDATE PROBABILITY RANKING" if is_confident else "CANDIDATE PROBABILITY RANKING (STATISTICAL MATCHES ONLY - BELOW THRESHOLD)"
                         st.markdown(f"##### {ranking_title}")
-                        for item in results["top_predictions"]:
-                            rank = item["rank"]
-                            code = item["code"]
-                            dname = item["display_name"]
-                            prob = item["confidence"]
-                            pct = item["percentage"]
+                        for idx_pred, item in enumerate(results["top_predictions"]):
+                            rank = item.get("rank", idx_pred + 1)
+                            code = item.get("code") or normalizer.get_code(item.get("class", ""))
+                            dname = item.get("display_name") or normalizer.get_display_name(item.get("class", ""))
+                            prob = item.get("confidence", 0.0)
+                            pct = item.get("percentage") or f"{prob * 100:.2f}%"
 
                             col_label, col_pct = st.columns([3, 1])
                             with col_label:

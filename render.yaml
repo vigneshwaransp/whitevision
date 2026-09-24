@@ -1,0 +1,56 @@
+# Render Blueprint Specification for WhiteVision
+# Deploys both FastAPI REST API and Streamlit Operations Console on Render
+
+services:
+  # ---------------------------------------------------------------------------
+  # Backend Inference Microservice (FastAPI + EfficientNet-B0 + OOD Filter)
+  # ---------------------------------------------------------------------------
+  - type: web
+    name: whitevision-api
+    runtime: python
+    plan: free
+    region: oregon
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+    startCommand: uvicorn app.api:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.0
+      - key: TF_CPP_MIN_LOG_LEVEL
+        value: "3"
+      - key: TF_ENABLE_ONEDNN_OPTS
+        value: "0"
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: OMP_NUM_THREADS
+        value: "1"
+
+  # ---------------------------------------------------------------------------
+  # Frontend Operations Console (Streamlit Web Interface)
+  # ---------------------------------------------------------------------------
+  - type: web
+    name: whitevision-ui
+    runtime: python
+    plan: free
+    region: oregon
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+    startCommand: streamlit run app/streamlit_app.py --server.port $PORT --server.address 0.0.0.0 --server.headless true
+    healthCheckPath: /_stcore/health
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.0
+      - key: TF_CPP_MIN_LOG_LEVEL
+        value: "3"
+      - key: TF_ENABLE_ONEDNN_OPTS
+        value: "0"
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: OMP_NUM_THREADS
+        value: "1"
+      - key: BACKEND_HOSTPORT
+        fromService:
+          type: web
+          name: whitevision-api
+          property: hostport
